@@ -2,6 +2,19 @@
 Visit firebase.google.com -> Go to console -> Create new project and app
 Open Project settings from settings icon on project overview -> Scroll down and under SDK setup and configuration for node copy each credentials and paste in relevant field inside .env.example
 Rename .env.example to .env
+Initialize Authentication for Email/Password and Database (development / testing) from firebase project under build category
+Open Firebase Database -> Navigate to Rules -> Clear the code and paste below code and click publish
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /{document=**} {
+      allow read, write;
+    }
+  }
+} 
 
 
 ### Install all dependencies

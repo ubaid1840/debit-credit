@@ -30,9 +30,9 @@ import {
 } from "@chakra-ui/react";
 import { Calendar } from "primereact/calendar";
 import { useEffect, useRef, useState } from "react";
-import "primereact/resources/themes/saga-blue/theme.css"; 
-import "primereact/resources/primereact.min.css"; 
-import "primeicons/primeicons.css"; 
+import "primereact/resources/themes/saga-blue/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
 import Sidebar from "@/components/sidebar";
 import GetLinkItems from "@/utils/SidebarItems";
 import Button, { GhostButton } from "@/components/ui/Button";
@@ -150,11 +150,14 @@ const TransactionFilter = () => {
 
   function downloadCSV(data) {
     const headers =
-      ["name", "account","title","type", "amount",  "note", "date"].join(",") + "\n";
+      ["name", "account", "title", "type", "amount", "note", "date"].join(",") +
+      "\n";
     const rows = data
       .map((row) => {
         const formattedDate = moment(new Date(row.date)).format("DD/MM/YY");
-        return `"${row.name}","${row.account.toString()}","${row.title}","${row.type}","${row.amount}","${row.note}", ${formattedDate}`;
+        return `"${row.name}","${row.account.toString()}","${row.title}","${
+          row.type
+        }","${row.amount}","${row.note}", ${formattedDate}`;
       })
       .join("\n");
     const csvContent = headers + rows;
@@ -169,14 +172,15 @@ const TransactionFilter = () => {
     URL.revokeObjectURL(url);
   }
 
-
-
   async function handleEditEntry() {
     updateDoc(doc(db, "record", selectedRecord.id), {
-      amount: selectedRecord.amount,
+      amount: Number(selectedRecord.amount),
       date: new Date(selectedRecord.date).getTime(),
       type: selectedRecord.type,
       note: selectedRecord.note,
+      title : selectedRecord.title,
+      name : selectedRecord.name,
+      account : selectedRecord.account
     })
       .then(() => {
         setLoading(false);
@@ -381,7 +385,7 @@ const TransactionFilter = () => {
               colorScheme="teal"
               onClick={() => {
                 setTransactions([]);
-                if (bankAccount.account === "All") {
+                if (bankAccount?.account === "All") {
                   setLoading(true);
                   handleFilterAll();
                 } else {
@@ -456,11 +460,28 @@ const TransactionFilter = () => {
             <AlertDialogBody>
               <VStack align={"flex-start"} gap={1}>
                 <Text fontSize={"14px"}>Bank Title</Text>
-                <Input
-                  isDisabled
-                  value={selectedRecord?.title}
-                  onChange={(e) => {}}
-                />
+                <Select
+                  isDisabled={allBanks.length === 0 || !selectedRecord}
+                  value={selectedRecord?.account}
+                  onChange={(e) => {
+                    const temp = allBanks.filter(
+                      (item) => item.account === e.target.value
+                    );
+                    setSelectedRecord((prevState) => ({
+                      ...prevState,
+                      name: temp[0].name,
+                      account: temp[0].account,
+                      title: temp[0].title,
+                    }));
+                  }}
+                >
+                  <option value={""}>{"Select bank title"}</option>
+                  {allBanks.map((eachBank, index) => (
+                    <option key={index} value={eachBank?.account}>
+                      {eachBank?.title}
+                    </option>
+                  ))}
+                </Select>
               </VStack>
 
               <VStack align={"flex-start"} gap={1}>
@@ -573,7 +594,7 @@ const TransactionFilter = () => {
                 }}
                 ml={3}
               >
-                Edit
+                Edit & Save
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

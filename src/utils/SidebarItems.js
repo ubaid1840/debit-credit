@@ -44,9 +44,14 @@ const GetLinkItems = (role) => {
                     path: `/dashboard/record`,
                 },
                 {
+                    name: "Balance Sheet",
+                    icon: FaRegFileAlt,
+                    path: `/dashboard/balancesheet`,
+                },
+                {
                     name: "Balance List",
                     icon: GiSettingsKnobs,
-                    path: `/dashboard/balance`,
+                    path: `/dashboard/balancelist`,
                 },
             ];
             

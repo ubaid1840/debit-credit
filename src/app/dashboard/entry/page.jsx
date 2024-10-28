@@ -171,7 +171,7 @@ const TransactionEntry = () => {
     });
   };
 
-  async function fetchBalance(val) {
+  async function fetchBalance(val, startingBalance) {
     getDocs(query(collection(db, "record"), where("account", "==", val)))
       .then((snapshot) => {
         let list = [];
@@ -190,7 +190,7 @@ const TransactionEntry = () => {
               totalCredit = totalCredit + Number(item.amount);
             }
           });
-          setBalance(totalCredit - totalDebit);
+          setBalance(startingBalance + totalCredit - totalDebit);
         }
       })
       .catch(() => {
@@ -200,10 +200,13 @@ const TransactionEntry = () => {
 
   async function handleEditEntry() {
     updateDoc(doc(db, "record", selectedRecord.id), {
-      amount: selectedRecord.amount,
+      amount: Number(selectedRecord.amount),
       date: new Date(selectedRecord.date).getTime(),
       type: selectedRecord.type,
       note: selectedRecord.note,
+      title : selectedRecord.title,
+      name : selectedRecord.name,
+      account : selectedRecord.account
     })
       .then(() => {
         setLoading(false);
@@ -269,22 +272,50 @@ const TransactionEntry = () => {
             mb={8}
           >
             <Stack spacing={4}>
+            <VStack align={"flex-start"} gap={1} w={"100%"}>
+                <Text fontSize={"14px"}>Date</Text>
+                <Box
+                  border={"1px solid"}
+                  borderColor={"#e2e8f0"}
+                  rounded={4}
+                  height={"40px"}
+                  display={"flex"}
+                  alignItems={"center"}
+                  justifyContent={"center"}
+                  px={"10px"}
+                  w={"100%"}
+                >
+                  <Calendar
+                    style={{ width: "100%" }}
+                    value={date}
+                    onChange={(e) => setDate(e.value)}
+                    placeholder="Select Date"
+                    dateFormat="mm/dd/yy"
+                    showIcon
+                  />
+                </Box>
+              </VStack>
               <VStack align={"flex-start"} gap={1}>
                 <Text fontSize={"14px"}>Bank title</Text>
                 <Select
                   isDisabled={allBanks.length === 0}
                   value={bankAccount.account}
                   onChange={(e) => {
-                    const temp = allBanks.filter(
-                      (item) => item.account === e.target.value
-                    );
-                    setBalanceLoading(true);
-                    fetchBalance(temp[0].account);
-                    setBankAccount({
-                      name: temp[0].name,
-                      account: temp[0].account,
-                      title: temp[0].title,
-                    });
+                    if(e.target.value){
+                      const temp = allBanks.filter(
+                        (item) => item.account === e.target.value
+                      );
+                      setBalanceLoading(true);
+                      fetchBalance(temp[0].account, temp[0].initial);
+                      setBankAccount({
+                        name: temp[0].name,
+                        account: temp[0].account,
+                        title: temp[0].title,
+                      });
+                    } else {
+                      setBankAccount({account : "", name : "", title: ""})
+                    }
+                   
                   }}
                 >
                   <option value={""}>{"Select bank title"}</option>
@@ -341,29 +372,7 @@ const TransactionEntry = () => {
                 </Select>
               </VStack>
 
-              <VStack align={"flex-start"} gap={1} w={"100%"}>
-                <Text fontSize={"14px"}>Date</Text>
-                <Box
-                  border={"1px solid"}
-                  borderColor={"#e2e8f0"}
-                  rounded={4}
-                  height={"40px"}
-                  display={"flex"}
-                  alignItems={"center"}
-                  justifyContent={"center"}
-                  px={"10px"}
-                  w={"100%"}
-                >
-                  <Calendar
-                    style={{ width: "100%" }}
-                    value={date}
-                    onChange={(e) => setDate(e.value)}
-                    placeholder="Select Date"
-                    dateFormat="mm/dd/yy"
-                    showIcon
-                  />
-                </Box>
-              </VStack>
+             
 
               <VStack align={"flex-start"} gap={1}>
                 <Text fontSize={"14px"}>Note</Text>
@@ -483,11 +492,28 @@ const TransactionEntry = () => {
             <AlertDialogBody>
               <VStack align={"flex-start"} gap={1}>
                 <Text fontSize={"14px"}>Bank Title</Text>
-                <Input
-                  isDisabled
-                  value={selectedRecord?.title}
-                  onChange={(e) => {}}
-                />
+                <Select
+                  isDisabled={allBanks.length === 0 || !selectedRecord}
+                  value={selectedRecord?.account}
+                  onChange={(e) => {
+                    const temp = allBanks.filter(
+                      (item) => item.account === e.target.value
+                    );
+                    setSelectedRecord((prevState) => ({
+                      ...prevState,
+                      name: temp[0].name,
+                      account: temp[0].account,
+                      title: temp[0].title,
+                    }));
+                  }}
+                >
+                  <option value={""}>{"Select bank title"}</option>
+                  {allBanks.map((eachBank, index) => (
+                    <option key={index} value={eachBank.account}>
+                      {eachBank.title}
+                    </option>
+                  ))}
+                </Select>
               </VStack>
 
               <VStack align={"flex-start"} gap={1}>
@@ -599,7 +625,7 @@ const TransactionEntry = () => {
                 }}
                 ml={3}
               >
-                Edit
+                Edit & Save
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
