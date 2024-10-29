@@ -154,6 +154,7 @@ const TransactionEntry = () => {
     DeleteValue("record", tId).then((val) => {
       setLoading(false);
       if (val.type) {
+        fetchBalance(bankAccount.account, bankAccount.initial);
         setTransactions(transactions.filter((item) => item.id !== tId));
         toast({
           title: "Success",
@@ -163,6 +164,7 @@ const TransactionEntry = () => {
           isClosable: true,
         });
       } else {
+        setBalanceLoading(false)
         toast({
           title: "Failed",
           description: val.message,
@@ -474,6 +476,7 @@ const TransactionEntry = () => {
                             aria-label="Delete Transaction"
                             onClick={() => {
                               setLoading(true);
+                              setBalanceLoading(true)
                               handleDeleteTransaction(transaction.id);
                             }}
                           />
