@@ -57,6 +57,7 @@ const TransactionEntry = () => {
     name: "",
     account: "",
     title: "",
+    initial : 0
   });
   const [allBanks, setAllbanks] = useState([]);
   const [amount, setAmount] = useState("");
@@ -112,6 +113,7 @@ const TransactionEntry = () => {
     }).then((val) => {
       setLoading(false);
       if (val.type) {
+        fetchBalance(bankAccount.account, bankAccount.initial);
         clearAll();
         setTransactions((prevState) => {
           const newState = [...prevState];
@@ -136,6 +138,7 @@ const TransactionEntry = () => {
           isClosable: true,
         });
       } else {
+        setBalanceLoading()
         toast({
           title: "Failed",
           description: val.message,
@@ -211,6 +214,7 @@ const TransactionEntry = () => {
       account : selectedRecord.account
     })
       .then(() => {
+        fetchBalance(bankAccount.account, bankAccount.initial);
         setLoading(false);
         onClose();
         toast({
@@ -232,6 +236,7 @@ const TransactionEntry = () => {
       })
       .catch((e) => {
         setLoading(false);
+        setBalanceLoading(false)
         toast({
           title: "Failed",
           description: e.message,
@@ -313,6 +318,7 @@ const TransactionEntry = () => {
                         name: temp[0].name,
                         account: temp[0].account,
                         title: temp[0].title,
+                        initial : temp[0].initial
                       });
                     } else {
                       setBankAccount({account : "", name : "", title: ""})
@@ -398,6 +404,7 @@ const TransactionEntry = () => {
                 colorScheme="teal"
                 onClick={() => {
                   setLoading(true);
+                  setBalanceLoading(true)
                   handleAddTransaction();
                 }}
               >
@@ -622,6 +629,7 @@ const TransactionEntry = () => {
                 colorScheme="teal"
                 onClick={() => {
                   setLoading(true);
+                  setBalanceLoading(true)
                   onClose();
                   handleEditEntry();
                 }}

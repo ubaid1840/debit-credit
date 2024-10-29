@@ -64,6 +64,7 @@ const TransactionFilter = () => {
     account: "",
     title: "",
   });
+  const [startingBalance, setStartingBalance] = useState(0)
 
   useEffect(() => {
     fetchBanks();
@@ -88,16 +89,16 @@ const TransactionFilter = () => {
   }
 
   async function handleFilter() {
-    GetValueAll(
-      "record",
-      moment(new Date(startDate)).startOf("day").valueOf(),
-      moment(new Date(endDate)).endOf("day").valueOf(),
-      bankAccount.name,
-      bankAccount.account
-    ).then((val) => {
+
+    getDocs(query(collection(db, "record"), where("account", "==", bankAccount.account)))
+    .then((snapshot) => {
+      let list = [];
+      snapshot.forEach((docs) => {
+        list.push({ ...docs.data(), id: docs.id });
+      });
       setLoading(false);
-      if (val.type) {
-        const temp = [...val.data];
+      if (list.length > 0) {
+        const temp = [...list];
         temp.sort((a, b) => a.date - b.date);
         let startingBalance = allBanks.filter(
           (item) => item.account === bankAccount.account
@@ -108,25 +109,77 @@ const TransactionFilter = () => {
             ...item,
             debit : item.type === 'Debit' ? item.amount : "-",
             credit : item.type === 'Credit' ? item.amount : "-", 
+            originalIndex : index,
             balance:
               item.type == "Credit"
                 ? startingBalance + item.amount
                 : startingBalance - item.amount,
+            
           });
           startingBalance = finalData[index].balance;
         });
-        setTransactions([...finalData]);
-      } else {
-        toast({
-          title: "Failed",
-          description: val.message,
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
+
+        const filteredData = []
+        finalData.map((item)=>{
+          if(item.date >=  moment(new Date(startDate)).startOf("day").valueOf() && item.date <= moment(new Date(endDate)).endOf("day").valueOf()){
+            filteredData.push(item)
+          }
+        })
+        const startingIndex = filteredData[0]
+        if(startingIndex.originalIndex !== 0){
+          setStartingBalance(finalData[startingIndex.originalIndex - 1].balance)
+        } else {
+          const temp = allBanks.filter(
+            (item) => item.account === bankAccount.account
+          );
+          setStartingBalance(temp[0].initial)
+        }
+        setTransactions([...filteredData]);
       }
+    })
+    .catch(() => {
       setLoading(false);
     });
+
+    // GetValueAll(
+    //   "record",
+    //   moment(new Date(startDate)).startOf("day").valueOf(),
+    //   moment(new Date(endDate)).endOf("day").valueOf(),
+    //   bankAccount.name,
+    //   bankAccount.account
+    // ).then((val) => {
+     
+    //   if (val.type) {
+    //     const temp = [...val.data];
+    //     temp.sort((a, b) => a.date - b.date);
+    //     let startingBalance = allBanks.filter(
+    //       (item) => item.account === bankAccount.account
+    //     )[0].initial;
+    //     let finalData = [];
+    //     temp.map((item, index) => {
+    //       finalData.push({
+    //         ...item,
+    //         debit : item.type === 'Debit' ? item.amount : "-",
+    //         credit : item.type === 'Credit' ? item.amount : "-", 
+    //         balance:
+    //           item.type == "Credit"
+    //             ? startingBalance + item.amount
+    //             : startingBalance - item.amount,
+    //       });
+    //       startingBalance = finalData[index].balance;
+    //     });
+    //     setTransactions([...finalData]);
+    //   } else {
+    //     toast({
+    //       title: "Failed",
+    //       description: val.message,
+    //       status: "error",
+    //       duration: 3000,
+    //       isClosable: true,
+    //     });
+    //   }
+    //   setLoading(false);
+    // });
   }
 
   const RenderEachRow = ({ transaction }) => {
@@ -212,6 +265,7 @@ const TransactionFilter = () => {
                       title: temp[0].title,
                       initial : temp[0].initial
                     });
+                    setStartingBalance(temp[0].initial)
                   } else {
                     setBankAccount({
                       name: "",
@@ -244,7 +298,7 @@ const TransactionFilter = () => {
 
                 <VStack align={"flex-start"} gap={1}>
                   <Text fontSize={"14px"}>Starting Balance</Text>
-                  <Input value={bankAccount?.initial} onChange={(e) => {}} />
+                  <Input value={startingBalance} onChange={(e) => {}} />
                 </VStack>
               </>
             )}
