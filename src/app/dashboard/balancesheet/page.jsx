@@ -340,7 +340,7 @@ const TransactionFilter = () => {
                     credit: item.type === "Credit" ? "Credit" : "",
                   });
                 });
-                generatePDF(transactions, bankAccount, startDate, endDate, allBanks.filter((item)=> item.account === transactions[0].account)[0].initial);
+                generatePDF(transactions, bankAccount, startDate, endDate, startingBalance);
               }}
             >
               Export to PDF
