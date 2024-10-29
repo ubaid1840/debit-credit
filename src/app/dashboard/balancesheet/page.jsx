@@ -100,7 +100,6 @@ const TransactionFilter = () => {
     ).then((val) => {
       setLoading(false);
       if (val.type) {
-        console.log(val.data);
         const temp = [...val.data];
         temp.sort((a, b) => a.date - b.date);
         let startingBalance = allBanks.filter(
@@ -110,6 +109,8 @@ const TransactionFilter = () => {
         temp.map((item) => {
           finalData.push({
             ...item,
+            debit : item.type === 'Debit' ? item.amount : "-",
+            credit : item.type === 'Credit' ? item.amount : "-", 
             balance:
               item.type == "Credit"
                 ? startingBalance + item.amount
@@ -117,7 +118,6 @@ const TransactionFilter = () => {
           });
           startingBalance = finalData[0].balance;
         });
-        console.log(finalData);
         setTransactions([...finalData]);
       } else {
         toast({
@@ -136,9 +136,9 @@ const TransactionFilter = () => {
     return (
       <Tr key={transaction.id}>
         <Td>{moment(new Date(transaction?.date)).format("DD/MM/YYYY")}</Td>
-        <Td>{transaction?.type}</Td>
         <Td>{transaction?.note}</Td>
-        <Td>{transaction?.amount}</Td>
+        <Td>{transaction?.debit}</Td>
+        <Td>{transaction?.credit}</Td>
         <Td>{transaction?.balance}</Td>
       </Tr>
     );
@@ -282,7 +282,7 @@ const TransactionFilter = () => {
                     credit: item.type === "Credit" ? "Credit" : "",
                   });
                 });
-                generatePDF(finalData, bankAccount, startDate, endDate, allBanks.filter((item)=> item.account === transactions[0].account)[0].initial);
+                generatePDF(transactions, bankAccount, startDate, endDate, allBanks.filter((item)=> item.account === transactions[0].account)[0].initial);
               }}
             >
               Export to PDF
@@ -292,9 +292,9 @@ const TransactionFilter = () => {
             <Thead>
               <Tr>
                 <Th>Date</Th>
-                <Th>Type</Th>
                 <Th>Note</Th>
-                <Th>Amount</Th>
+                <Th>Debit</Th>
+                <Th>Credit</Th>
                 <Th>Balance</Th>
               </Tr>
             </Thead>
@@ -349,14 +349,13 @@ const generatePDF = (transactions, bank, start, end, startingBalance) => {
   doc.line(10, 75, pageWidth - 10, 75);
 
   // Prepare table data
-  const tableColumns = ["Date", "Note", "Debit", "Credit", "Amount", "Balance"];
-  const tableRows = transactions.map(({ date, note, debit, credit, amount, balance }) => [
+  const tableColumns = ["Date", "Note", "Debit", "Credit", "Balance"];
+  const tableRows = transactions.map(({ date, note, debit, credit, balance }) => [
     moment(new Date(date)).format("DD/MM/YYYY"),
     note,
     debit ? debit : "-",
     credit ? credit : "-",
-    amount.toFixed(2),
-    balance.toFixed(2),
+    Number(balance).toFixed(2),
   ]);
 
   // Add table with enhanced styling
