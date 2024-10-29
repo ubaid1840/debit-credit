@@ -91,6 +91,7 @@ export default function Page() {
               account: newBank.account,
               title: newBank.title,
               id: val.data.id,
+              initial: newBank.initial ? Number(newBank.initial) : 0,
             });
             return newState;
           });
