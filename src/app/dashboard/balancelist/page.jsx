@@ -56,7 +56,6 @@ export default function Page() {
 
   async function fetchData() {
     GetValueAll("banks").then((val) => {
-      setLoading(false);
       if (val.type) {
         setAllbanks(val.data);
       } else {
