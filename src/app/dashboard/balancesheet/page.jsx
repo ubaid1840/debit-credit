@@ -103,7 +103,7 @@ const TransactionFilter = () => {
           (item) => item.account === bankAccount.account
         )[0].initial;
         let finalData = [];
-        temp.map((item) => {
+        temp.map((item, index) => {
           finalData.push({
             ...item,
             debit : item.type === 'Debit' ? item.amount : "-",
@@ -113,7 +113,7 @@ const TransactionFilter = () => {
                 ? startingBalance + item.amount
                 : startingBalance - item.amount,
           });
-          startingBalance = finalData[0].balance;
+          startingBalance = finalData[index].balance;
         });
         setTransactions([...finalData]);
       } else {

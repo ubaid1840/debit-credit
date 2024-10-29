@@ -172,7 +172,6 @@ const TransactionEntry = () => {
   };
 
   async function fetchBalance(val, startingBalance) {
-    console.log(startingBalance)
     getDocs(query(collection(db, "record"), where("account", "==", val)))
       .then((snapshot) => {
         let list = [];
