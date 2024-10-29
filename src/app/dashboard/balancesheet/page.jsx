@@ -73,9 +73,6 @@ const TransactionFilter = () => {
     GetValueAll("banks").then((val) => {
       setLoading(false);
       if (val.type) {
-        const uniqueArray = Array.from(
-          new Map(val.data.map((item) => [item.name, item])).values()
-        );
         setAllbanks(val.data);
       } else {
         toast({
@@ -213,12 +210,14 @@ const TransactionFilter = () => {
                       name: temp[0].name,
                       account: temp[0].account,
                       title: temp[0].title,
+                      initial : temp[0].initial
                     });
                   } else {
                     setBankAccount({
                       name: "",
                       account: "",
                       title: "",
+                      initial : "",
                     });
                   }
                 }}
@@ -241,6 +240,11 @@ const TransactionFilter = () => {
                 <VStack align={"flex-start"} gap={1}>
                   <Text fontSize={"14px"}>Bank account#</Text>
                   <Input value={bankAccount?.account} onChange={(e) => {}} />
+                </VStack>
+
+                <VStack align={"flex-start"} gap={1}>
+                  <Text fontSize={"14px"}>Starting Balance</Text>
+                  <Input value={bankAccount?.initial} onChange={(e) => {}} />
                 </VStack>
               </>
             )}

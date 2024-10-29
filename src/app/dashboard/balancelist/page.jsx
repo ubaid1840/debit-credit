@@ -23,6 +23,8 @@ export default function Page() {
   const [transactions, setTransactions] = useState([]);
   const toast = useToast();
   const [loading, setLoading] = useState(false);
+  const [allBanks, setAllbanks] = useState([]);
+
 
   useEffect(() => {
     fetchData();
@@ -53,10 +55,26 @@ export default function Page() {
   }
 
   async function fetchData() {
+    GetValueAll("banks").then((val) => {
+      setLoading(false);
+      if (val.type) {
+        setAllbanks(val.data);
+      } else {
+        toast({
+          title: "Failed",
+          description: val.message,
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    });
+
     GetValueAll("record").then((val) => {
       setLoading(false);
       if (val.type) {
         const result = calculateTotals(val.data);
+        console.log(result)
         setTransactions(result);
       } else {
         toast({
@@ -94,22 +112,24 @@ export default function Page() {
                   <Th>Bank</Th>
                   <Th>Account</Th>
                   <Th>Title</Th>
-                  <Th>Totle Credit</Th>
-                  <Th>Totle Debit</Th>
+                  <Th>Starting Balance</Th>
+                  <Th>Total Credit</Th>
+                  <Th>Total Debit</Th>
                   <Th>Balance</Th>
                 </Tr>
               </Thead>
               <Tbody>
                 {transactions.length > 0 ? (
-                  transactions.map((transaction) => (
-                    <Tr key={transaction.id}>
+                  transactions.map((transaction, index) => (
+                    <Tr key={index}>
                       <Td>{transaction.name}</Td>
                       <Td>{transaction.account}</Td>
                       <Td>{transaction.title}</Td>
+                      <Td> {allBanks.length > 0 && allBanks.filter((item)=> item.account === transaction.account)[0].initial}</Td>
                       <Td>{transaction.totalCredit}</Td>
                       <Td>{transaction.totalDebit}</Td>
                       <Td>
-                        {transaction.totalCredit - transaction.totalDebit}
+                        {allBanks.length > 0 ? allBanks.filter((item)=> item.account === transaction.account)[0].initial + transaction.totalCredit - transaction.totalDebit  : transaction.totalCredit - transaction.totalDebit}
                       </Td>
                       {/* <Td>{transaction.madeBy}</Td> */}
                     </Tr>

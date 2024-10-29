@@ -191,6 +191,7 @@ export default function Page() {
               />
               <Input
                 placeholder="Enter starting balance"
+                type="number"
                 value={newBank.initial}
                 onChange={(e) =>
                   setNewBank((prevState) => ({
